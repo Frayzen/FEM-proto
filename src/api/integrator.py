@@ -22,7 +22,7 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, functions
     nb_dof = nb_ref_pts * len(unknowns)
     nb_test = nb_ref_pts * len([ fn for fn in functions if fn.type == FFnType.TEST ])
     K = np.zeros((nb_dof, nb_test), dtype=float)
-    f = np.zeros(nb_test, dtype=float)
+    f = np.zeros(nb_dof, dtype=float)
     i = 0
     for i in range(len(elem.ips)):
 
@@ -72,5 +72,5 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, functions
         else:
             K, f = evaluate(expr, K, f)
         K *= linalg.det(J)
-    return J * K, f
+    return J * K, f.flatten()
 

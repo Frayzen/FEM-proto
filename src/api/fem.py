@@ -10,6 +10,5 @@ def create_system(mesh : Mesh, expr : Expr, functions : List[Tuple[Function, FFn
     atoms = expr.atoms(Function)
     assert(fn in functions for fn in atoms)
     assert(len(atoms) == len(functions))
-    assemble(mesh, expr, functions)
-    # K, f = assemble(mesh, expr, functions)
-    # return K, f
+    return assemble(mesh, expr, functions)
+
