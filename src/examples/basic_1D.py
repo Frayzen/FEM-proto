@@ -1,19 +1,19 @@
 from sympy import *
 
-from api.ast.fns import create_test_fn, create_unkown_fn
+from api.ast.fns import FFnType, create_test_fn, create_unknown_fn
 from api.fem import create_system
 from api.mesh.utils import discretize_1d
 
 # Example Poisson Equation
 
-u = create_unkown_fn()
+u = create_unknown_fn()
 v = create_test_fn()
 
 f = 2
 
-ast = diff(u) * diff(v) - f * v
+expr = diff(u) * diff(v) - f * v
 
-mesh = discretize_1d(0, 1, 8)
+mesh = discretize_1d(0, 1, 2)
 
-create_system(mesh, ast, [u, v])
+create_system(mesh, expr, [u, v])
 # K, f = create_system(mesh, ast, [u, v])

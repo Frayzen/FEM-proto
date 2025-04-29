@@ -1,6 +1,8 @@
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
+from numpy._core.numerictypes import floating
+from numpy.typing import NDArray
 
 from api.elements.elem_node import FElemNode
 from api.ips.ip import IP
@@ -12,7 +14,9 @@ class FElement:
         self.ips = ips
         for ip in ips:
             ip.evaluate(dim, ref_pts)
-        local = np.outer(ips[0].evaluated, ips[1].evaluated) * ips[0].weight
-        local += np.outer(ips[1].evaluated, ips[0].evaluated) * ips[1].weight
-        print(local)
+
+    def get_jacobian(self, ip : IP, nodes : NDArray):
+        # nodes (dim * nbnode)
+        # dxep (nbnode * dim)
+        return ip.dxep @ nodes
 

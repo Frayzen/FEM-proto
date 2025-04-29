@@ -10,8 +10,8 @@ class Bar(FElement):
                 1,
                 # FElemNode
                 [
-                    FElemNode((0), xi),
-                    FElemNode((1), 1 - xi),
+                    FElemNode((0), 1 - xi),
+                    FElemNode((1), xi),
                 ], 
                 # IPs
                 [
