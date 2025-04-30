@@ -53,7 +53,7 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, functions
             cur_test = None
             cur_unknown = None
 
-            weight = eval_expr(expr)
+            weight = eval_expr(expr) * ip.weight
             assert cur_test is not None
             if cur_unknown is None:
                 f = f + weight * cur_test[0].flatten()
@@ -71,6 +71,8 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, functions
                 K, f = evaluate(e, K, f)
         else:
             K, f = evaluate(expr, K, f)
-        K *= linalg.det(J)
-    return J * K, f.flatten()
+        detJ = linalg.det(J)
+        K *= detJ 
+        f *= detJ 
+    return K, f.flatten()
 

@@ -22,6 +22,8 @@ def assemble(mesh : Mesh, expr : sp.Expr, functions : List[Tuple[sp.Function, FF
             node_ids = conn[cur]
             nodes = mesh.nodes[node_ids]
             local_K, local_F = integrate(nodes, elem, expr, functions)
+            print("K\n",local_K)
+            print("F\n", local_F)
             assert local_F.shape[0] == local_K.shape[0]
             assert local_K.shape[0] == nbunknown * nbnode
 
@@ -33,4 +35,6 @@ def assemble(mesh : Mesh, expr : sp.Expr, functions : List[Tuple[sp.Function, FF
                     for j in range(nbnode):
                         col = node_ids[j]
                         K[row * nbunknown + u, col] += local_K[i, j]
+    print("FINAL K\n", K)
+    print("FINAL F\n", f)
     return K, f

@@ -14,7 +14,7 @@ f = 1
 
 expr = diff(u) * diff(v) - f * v
 
-mesh = discretize_1d(0, 1, 8)
+mesh = discretize_1d(0, 8, 8)
 
 K, f = create_system(mesh, expr, [u, v])
 
@@ -30,4 +30,5 @@ for dof in dofs_to_constrain:
     f[dof] = 0
 
 u = np.linalg.solve(K, f)
-print(u)
+
+print("RES\n",u)
