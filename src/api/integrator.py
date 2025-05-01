@@ -1,27 +1,29 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
-from numpy import floating, integer, linalg, outer
+from numpy import floating, linalg, outer
 from numpy.typing import NDArray
-from sympy import Expr, Function, det
+from sympy import Expr, Function
 from api.ast.fns import FFnType
 from api.elements.element import FElement
-from api.mesh.mesh import Mesh
 
 def get_nbderivative(expr : Expr):
     cur = 0
     while expr.is_Derivative:
         expr = expr.args[0]
         cur += 1
-    assert expr.is_Function
+    assert expr.is_Function, "Could not get the derivative of a non function"
     return expr, cur
 
-def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, functions : List[Tuple[Function, FFnType]]):
-    unknowns = [ fn for fn in functions if fn.type == FFnType.UNKNOWN ]
+def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, fn_map : Dict[Function, int]):
+    unknowns = [ fn for fn in fn_map.keys() if fn.type == FFnType.UNKNOWN ]
+    tests = [ fn for fn in fn_map.keys() if fn.type == FFnType.TEST ]
     nb_ref_pts = len(elem.ref_pts)
-    nb_dof = nb_ref_pts * len(unknowns)
-    nb_test = nb_ref_pts * len([ fn for fn in functions if fn.type == FFnType.TEST ])
-    K = np.zeros((nb_dof, nb_test), dtype=float)
+
+    nb_unknowns = len(unknowns)
+    nb_dof = nb_ref_pts * nb_unknowns 
+
+    K = np.zeros((nb_dof, nb_ref_pts * len(tests)), dtype=float)
     f = np.zeros(nb_dof, dtype=float)
     i = 0
     for i in range(len(elem.ips)):
@@ -38,10 +40,12 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, functions
             if expr.is_Function or expr.is_Derivative:
                 fn, nb = get_nbderivative(expr)
                 if fn.type == FFnType.UNKNOWN:
-                    cur_unknown = (ip.get_shapefn(nb), fn)
+                    assert cur_unknown is None, "Please do not multiply 2 unkown functions together"
+                    cur_unknown = (ip.get_shapefn(nb), fn_map[fn])
                     return 1
                 else:
-                    cur_test = (ip.get_shapefn(nb), fn)
+                    assert cur_test is None, "Please do not multiply 2 test functions together"
+                    cur_test = (ip.get_shapefn(nb), fn_map[fn])
                     return 1
             else:
                 evaluated_args = [eval_expr(arg) for arg in expr.args]
@@ -54,14 +58,21 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, functions
             cur_unknown = None
 
             weight = eval_expr(expr) * ip.weight
-            assert cur_test is not None
+            assert cur_test is not None, "Please multiply each term of the equation by a test function"
+
+            tst, tst_id = cur_test
+            fromtst = tst_id * nb_ref_pts
+
             if cur_unknown is None:
-                f = f + weight * cur_test[0].flatten()
+                f[fromtst:fromtst+nb_ref_pts] = f[fromtst:fromtst+nb_ref_pts] + weight * tst.flatten()
             else:
-                toadd = weight * outer(cur_unknown[0], cur_test[0])
+                uk, uk_id = cur_unknown
+
+                toadd = weight * outer(uk, tst)
                 toadd = toadd.astype(float)
-                id = unknowns.index(cur_unknown[1])
-                sub = K[id*nb_ref_pts:(id + 1)*nb_ref_pts]
+
+                fromuk = uk_id*nb_ref_pts
+                sub = K[fromuk:fromuk+nb_ref_pts, fromtst:fromtst+nb_ref_pts]
                 sub += toadd
             return K, f
 
