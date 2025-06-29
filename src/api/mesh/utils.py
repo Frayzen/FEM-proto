@@ -7,7 +7,7 @@ from sympy import Tuple
 from api.elements.bar import Bar
 from api.mesh.mesh import Mesh
 
-def discretize_1d(min : float, max : float, amount_bar : int):
+def discretize_domain(min : float, max : float, amount_bar : int):
     assert(amount_bar > 0)
     assert(min < max)
     offset = (max - min) / amount_bar
@@ -15,6 +15,10 @@ def discretize_1d(min : float, max : float, amount_bar : int):
     elems = np.array([
         [i, i + 1] for i in range(amount_bar)
     ])
+    return nodes, elems
+
+def discretize_1d(min : float, max : float, amount_bar : int):
+    nodes, elems = discretize_domain(min, max, amount_bar)
     m : Mesh = Mesh(1)
     m.set_nodes(nodes)
     m.add_elems(Bar(), elems)
@@ -22,21 +26,19 @@ def discretize_1d(min : float, max : float, amount_bar : int):
 
 
 
-def discretize(min : float | List | Tuple, max : float | List | Tuple, amount_bar : int | List | Tuple):
-    amount_bar = np.array(amount_bar, dtype=int)
-    min = np.array(min, dtype=float)
-    max = np.array(max, dtype=float)
-    assert(len(min) == len(max) == len(amount_bar))
-    np.testing.assert_equal(min < max, True)
-    np.testing.assert_equal(amount_bar != 0)
-    offset = (max - min) / amount_bar
-    nodes = np.arange((amount_bar + 1).prod()).reshape(amount_bar + 1) * offset
-    elems = np.array([
-        [i, i + 1] for i in range(amount_bar)
-    ])
-    m : Mesh = Mesh(1)
+def discretize(min : float | List | Tuple, max : float | List | Tuple, amount_nodes : int | List | Tuple):
+    assert(len(min) == len(max) == len(amount_nodes))
+    dim = len(min)
+    assert(dim > 0 and dim < 4)
+    dim_vals = []
+    nb_node = np.prod(amount_nodes)
+    for i in range(dim):
+        dim_vals.append(np.linspace(min[i], max[i], amount_nodes[i]))
+    print(dim_vals)
+    vals = np.meshgrid(*dim_vals)
+    nodes = np.stack(vals, axis=-1)
+    nodes = nodes.reshape(nb_node, dim)
+    m : Mesh = Mesh(dim)
     m.set_nodes(nodes)
-    m.add_elems(Bar(), elems)
-    return m
-
-
+    elem_type=[Bar]
+    

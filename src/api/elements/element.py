@@ -1,7 +1,5 @@
 from typing import List
 
-import numpy as np
-from numpy._core.numerictypes import floating
 from numpy.typing import NDArray
 
 from api.elements.elem_node import FElemNode

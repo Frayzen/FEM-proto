@@ -19,7 +19,7 @@ expr = diff(u) * diff(v) - f * v
 # u(0) = u(8) = 0
 # x*(x-8)
 
-nb = 5
+nb = 18
 minval = 0
 maxval = 8
 mesh = discretize_1d(minval, maxval, nb)
