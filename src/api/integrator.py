@@ -23,10 +23,12 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, fn_map : 
     nb_unknowns = len(unknowns)
     nb_dof = nb_ref_pts * nb_unknowns 
 
-    K = np.zeros((nb_dof, nb_ref_pts * len(tests)), dtype=float)
-    f = np.zeros(nb_dof, dtype=float)
+    resK = np.zeros((nb_dof, nb_ref_pts * len(tests)), dtype=float)
+    resf = np.zeros(nb_dof, dtype=float)
     i = 0
     for i in range(len(elem.ips)):
+        K = np.zeros((nb_dof, nb_ref_pts * len(tests)), dtype=float)
+        f = np.zeros(nb_dof, dtype=float)
 
         ip = elem.ips[i]
         J = elem.get_jacobian(ip, nodes)
@@ -83,7 +85,9 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, fn_map : 
         else:
             K, f = evaluate(expr, K, f)
         detJ = linalg.det(J)
-        K *= detJ 
+        K *= 1 / detJ 
         f *= detJ 
-    return K, f.flatten()
+        resK += K
+        resf += f
+    return resK, resf.flatten()
 

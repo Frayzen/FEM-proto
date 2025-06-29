@@ -10,9 +10,13 @@ def test_poisson():
     u = create_unknown_fn()
     v = create_test_fn()
 
-    f = 1
+    f = 2
 
     expr = diff(u) * diff(v) - f * v
+
+    # u''(x) = 2
+    # u(0) = u(8) = 0
+    # x*(x-8)
 
     mesh = discretize_1d(0, 8, 8)
 
@@ -32,7 +36,7 @@ def test_poisson():
     u = np.linalg.solve(K, f)
 
     print("RES\n",u)
-    np.testing.assert_almost_equal(u, [ 0.,  -3.5, -6.,  -7.5, -8.,  -7.5, -6.,  -3.5,  0. ])
+    np.testing.assert_almost_equal(u, [0., -7., -12., -15., -16., -15., -12., -7., 0.])
 
 # Example 2 Poisson Equation
 def test_2unknowns():
@@ -65,4 +69,4 @@ def test_2unknowns():
     print("RES\n",u)
 
 test_poisson()
-test_2unknowns()
+# test_2unknowns()
