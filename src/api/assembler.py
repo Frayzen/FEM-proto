@@ -32,7 +32,7 @@ def assemble(mesh : Mesh, expr : sp.Expr, functions : List[Tuple[sp.Function, FF
         for cur in range(conn.shape[0]):
             node_ids = conn[cur]
             nodes = mesh.nodes[node_ids]
-            local_K, local_F = integrate(nodes, elem, expr, fn_map)
+            local_K, local_F = integrate(nodes, elem(), expr, fn_map)
             # print("K\n",local_K)
             # print("F\n", local_F)
 

@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import optimize
 
+from api.elements.quad import Quad
 from api.fem import create_system
 from api.mesh.utils import discretize
 
@@ -19,7 +20,7 @@ expr = diff(u) * diff(v) - f * v
 # u(0) = u(8) = 0
 # x*(x-8)
 
-nb = (5, 5)
+nb = (20, 20)
 minval = (0, 0)
 maxval = (8, 8)
 mesh = discretize(minval, maxval, nb)
@@ -61,3 +62,52 @@ mesh = discretize(minval, maxval, nb)
 
 # plt.show()
 
+
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # Required for 3D plotting
+
+def plot_quad_mesh_3d(nodes: np.ndarray, elems: np.ndarray, z_values: np.ndarray = None):
+    """
+    Plots a quadrilateral mesh in 3D given nodes and element connectivity.
+    
+    Args:
+        nodes: Array of shape (N, 2) or (N, 3) containing node coordinates.
+        elems: Array of shape (M, 4) defining quad connectivity (4 node indices per element).
+        z_values: Optional array of shape (N,) containing z-coordinates for each node.
+                 If not provided and nodes is (N, 2), z-coordinates will be set to zero.
+    """
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # Prepare 3D coordinates
+    if nodes.shape[1] == 2:
+        if z_values is None:
+            z_values = np.zeros(nodes.shape[0])
+        nodes_3d = np.column_stack([nodes, z_values])
+    else:
+        nodes_3d = nodes
+    
+    # Plot nodes (optional)
+    ax.scatter(nodes_3d[:, 0], nodes_3d[:, 1], nodes_3d[:, 2], 
+               color='red', s=10, label='Nodes')
+    
+    # Plot edges of each quad
+    for elem in elems:
+        # Close the loop by repeating the first node
+        quad_nodes = nodes_3d[elem]
+        quad_nodes_closed = np.vstack([quad_nodes, quad_nodes[0]])
+        
+        # Draw the quad edges
+        ax.plot(quad_nodes_closed[:, 0], quad_nodes_closed[:, 1], quad_nodes_closed[:, 2], 
+                'b-', lw=1)
+    
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_title('3D Quadrilateral Mesh')
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
+
+plot_quad_mesh_3d(mesh.nodes, mesh.elems[Quad])

@@ -4,7 +4,7 @@ from api.elements.element import FElement
 from api.ips.ip import IP
 
 
-class Bar(FElement):
+class Quad(FElement):
     def __init__(self):
         super().__init__(
             2,
@@ -20,4 +20,11 @@ class Bar(FElement):
                 IP([0.5, 0.5], 1)
             ]
         )
+
+    _instance = None  # Class-level storage for singleton
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
