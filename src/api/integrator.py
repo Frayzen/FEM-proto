@@ -32,6 +32,7 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, fn_map : 
 
         ip = elem.ips[i]
         J = elem.get_jacobian(ip, nodes)
+        detJ = linalg.det(J)
         
         # return WEIGHT, updates cur_unkown and cur_test
         def eval_expr(expr : Expr) -> float:
@@ -43,12 +44,12 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, fn_map : 
                 fn, nb = get_nbderivative(expr)
                 if fn.type == FFnType.UNKNOWN:
                     assert cur_unknown is None, "Please do not multiply 2 unkown functions together"
-                    cur_unknown = (ip.get_shapefn(nb), fn_map[fn])
-                    return 1
+                    cur_unknown = [ip.get_shapefn(nb), fn_map[fn]]
+                    return 1 / (detJ)**nb
                 else:
                     assert cur_test is None, "Please do not multiply 2 test functions together"
                     cur_test = (ip.get_shapefn(nb), fn_map[fn])
-                    return 1
+                    return 1 / (detJ)**nb
             else:
                 evaluated_args = [eval_expr(arg) for arg in expr.args]
                 return expr.func(*evaluated_args)
@@ -84,8 +85,7 @@ def integrate(nodes : NDArray[floating], elem : FElement, expr : Expr, fn_map : 
                 K, f = evaluate(e, K, f)
         else:
             K, f = evaluate(expr, K, f)
-        detJ = linalg.det(J)
-        K *= 1 / detJ 
+        K *= detJ 
         f *= detJ 
         resK += K
         resf += f
